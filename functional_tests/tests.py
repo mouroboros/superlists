@@ -1,9 +1,10 @@
+from django.test import LiveServerTestCase
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import time
 import os, unittest
 
-class NewVisitorTest (unittest.TestCase):
+class NewVisitorTest (LiveServerTestCase):
     def setUp(self):
         self.browser = webdriver.Firefox(executable_path='/usr/local/bin/geckodriver')
     def tearDown(self):
@@ -18,7 +19,7 @@ class NewVisitorTest (unittest.TestCase):
         #Edith has heard about a cool new to-do app she goes to check out
         # the webpage
         
-        self.browser.get('http://localhost:8000')
+        self.browser.get(self.live_server_url)
         
         # She notices the page title and header mention to-do lists
         self.assertIn('To-Do',self.browser.title)
@@ -32,15 +33,30 @@ class NewVisitorTest (unittest.TestCase):
             'Enter a to-do item'
             )
         
-        #she types "buy peacock feathers"
+        # She types "Buy peacock feathers" into a text box (Edith's hobby
+        # is tying fly-fishing lures)
         inputbox.send_keys('Buy peacock feathers')
-        # when she hits enter, the page updates
-        
+
+        # When she hits enter, the page updates, and now the page lists
+        # "1: Buy peacock feathers" as an item in a to-do list table
         inputbox.send_keys(Keys.ENTER)
         time.sleep(1)
-        
+
         self.check_for_row_in_list_table('1: Buy peacock feathers')
+
+        # There is still a text box inviting her to add another item. She
+        # enters "Use peacock feathers to make a fly" (Edith is very
+        # methodical)
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('Use peacock feathers to make a fly')
+        inputbox.send_keys(Keys.ENTER)
+        time.sleep(1)
+
+        # The page updates again, and now shows both items on her list
         self.check_for_row_in_list_table('2: Use peacock feathers to make a fly')
+        self.check_for_row_in_list_table('1: Buy peacock feathers')
+        
+ 
         
         
         #still text box for new items
@@ -49,5 +65,4 @@ class NewVisitorTest (unittest.TestCase):
         #url has persistance
         #satisfied she goes to sleep
 
-if __name__ == '__main__':
-    unittest.main()
+
