@@ -2,11 +2,12 @@ from fabric.contrib.files import append, exists, sed
 from fabric.api import env, local, run
 import random
 
+
 REPO_URL="https://github.com/mouroboros/superlists.git"
 
 def deploy () :
     site_folder = f'/home/{env.user}/sites/{env.host}'
-    source_folder = site_folder + 'source'
+    source_folder = site_folder + '/source'
     _create_directory_structure_if_necessary(site_folder)
     _get_latest_source(source_folder)
     _update_settings(source_folder,env.host)
@@ -19,12 +20,13 @@ def _create_directory_structure_if_necessary(site_folder):
         run(f'mkdir -p {site_folder}/{subfolder}')
 
 def _get_latest_source (source_folder) :
-    if exists (source_folder + '.git'):
+    if exists (source_folder + '/.git'):
         run (f'cd {source_folder} && git fetch')
     else:
         run (f'git clone {REPO_URL} {source_folder}')
     current_commit = local("git log -n 1 --format=%H", capture=True)
     run (f'cd {source_folder} && git reset --hard {current_commit}')
+    run (f'cd {source_folder} && ls')
 
 # for the above run to work, need to make sure done a git push on
 # local machine
